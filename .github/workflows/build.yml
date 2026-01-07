@@ -1,0 +1,38 @@
+name: Build LaTeX Document
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up TeX Live
+      uses: TeX-Live/setup-texlive-action@v3
+      with:
+        packages: |
+          scheme-basic
+          graphicx
+
+    - name: Set up Bazel
+      uses: bazel-contrib/setup-bazel@0.16.0
+      with:
+        bazelisk-cache: true
+        disk-cache: ${{ github.workflow }}
+        repository-cache: true
+
+    - name: Build PDF
+      run: bazel build //:main
+
+    - name: Upload PDF
+      uses: actions/upload-artifact@v4
+      with:
+        name: main.pdf
+        path: bazel-bin/main.pdf
